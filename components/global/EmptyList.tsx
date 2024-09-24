@@ -1,3 +1,5 @@
+import cn from "classnames";
+
 function EmptyList({
   heading = "No items found.",
   className,

@@ -3260,10 +3260,13 @@ import { CardSignInButton } from "../form/Buttons";
 import { fetchFavoriteId } from "@/utils/actions";
 import FavoriteToggleForm from "./FavoriteToggleForm";
 async function FavoriteToggleButton({ productId }: { productId: string }) {
+  // auth function gets the credentials of the logged in user
   const { userId } = auth();
+  // If the user is not logged in, shows the login button without the favourite action
   if (!userId) return <CardSignInButton />;
+  // If the user is logged in, it checks the database for favourites
   const favoriteId = await fetchFavoriteId({ productId });
-
+  // Renders the form component for the favourite operation
   return <FavoriteToggleForm favoriteId={favoriteId} productId={productId} />;
 }
 export default FavoriteToggleButton;
@@ -3288,12 +3291,16 @@ function FavoriteToggleForm({
   productId,
   favoriteId,
 }: FavoriteToggleFormProps) {
-  const pathname = usePathname();
+  const pathname = usePathname(); // Get the path to the page the user is currently on.
+
+  // toggleFavouriteAction function, an action to be used to add or remove a favourite.
   const toggleAction = toggleFavoriteAction.bind(null, {
     productId,
     favoriteId,
     pathname,
   });
+
+  // The form is sent with the favourite status
   return (
     <FormContainer action={toggleAction}>
       <CardSubmitButton isFavorite={favoriteId ? true : false} />
@@ -3313,9 +3320,10 @@ export const toggleFavoriteAction = async (prevState: {
   favoriteId: string | null;
   pathname: string;
 }) => {
-  const user = await getAuthUser();
-  const { productId, favoriteId, pathname } = prevState;
+  const user = await getAuthUser(); // Session control to get the user's ID
+  const { productId, favoriteId, pathname } = prevState; // We remove productId, favouriteId and pathname from the parameters
   try {
+    // If favoriteId is present, the product has already been added to the favourites. In this case we delete the favourite.
     if (favoriteId) {
       await db.favorite.delete({
         where: {
@@ -3323,6 +3331,7 @@ export const toggleFavoriteAction = async (prevState: {
         },
       });
     } else {
+      // If there is no favouriteId, we add the product to favourites.
       await db.favorite.create({
         data: {
           productId,
@@ -3330,9 +3339,14 @@ export const toggleFavoriteAction = async (prevState: {
         },
       });
     }
+
+    // When the favourite operation is successful, we revalidate the page (revalidate).
     revalidatePath(pathname);
+
+    // Message returned as a result of favourite addition/removal
     return { message: favoriteId ? "Removed from Faves" : "Added to Faves" };
   } catch (error) {
+    // We return an error message in case of error
     return renderError(error);
   }
 };
