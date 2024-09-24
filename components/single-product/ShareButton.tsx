@@ -44,7 +44,7 @@ function ShareButton({ productId, name }: { productId: string; name: string }) {
         <EmailShareButton url={shareLink} subject={name}>
           <EmailIcon size={32} round />
         </EmailShareButton>
-        <WhatsappShareButton url={shareLink} subject={name}>
+        <WhatsappShareButton url={shareLink} title={name}>
           <WhatsappIcon size={32} round />
         </WhatsappShareButton>
       </PopoverContent>
